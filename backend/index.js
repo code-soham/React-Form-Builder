@@ -12,10 +12,12 @@ app.get("/", (req, res) => {
   res.send("formIt Backend");
 });
 app.post("/auth/", async (req, res) => {
+  //authenticate user
   var response = await authenticate(req.body);
   res.send({ response: response });
 });
 app.post("/addUser/", async (req, res) => {
+  //add user
   var response = await findUser(req.body.email);
   console.log(response);
   if (response === true) {
@@ -46,14 +48,16 @@ app.post("/addUser/", async (req, res) => {
   }
 });
 app.post("/createForm/", async (req, res) => {
+  //create form
   let response = await makeForm(req.body);
-  console.log(response,"id");
+  console.log(response, "id");
   res.send({
     id: response,
   });
 });
 
 app.post("/getFormById/", async (req, res) => {
+  //get form by id
   var response = await getForm(req.body.id);
   console.log(response);
   if (response.length === 0) {
@@ -69,16 +73,32 @@ app.post("/getFormById/", async (req, res) => {
   }
 });
 app.post("/submitForm/", async (req, res) => {
-  
-  try{
+  //submit form
+
+  try {
     let response = await submitForm(req.body);
     res.send({
       msg: response,
     });
-  }
-  catch(err){
+  } catch (err) {
     res.send({
       msg: err,
+    });
+  }
+});
+app.post("/getUser/", async (req, res) => {
+  //get user "
+  var response = await getUser(req.body.email);
+  console.log(response);
+  if (response.length === 0) {
+    res.send({
+      success: false,
+      data: response,
+    });
+  } else {
+    res.send({
+      success: true,
+      data: response,
     });
   }
 });
@@ -87,6 +107,9 @@ app.listen(process.env.PORT || 8000, async () => {
 });
 
 //functions
+async function getUser(obj) {
+  return await User.find({ email: obj });
+}
 async function submitForm(obj) {
   let data = await Form.find({
     _id: obj.id,

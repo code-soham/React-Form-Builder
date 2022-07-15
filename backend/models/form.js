@@ -10,7 +10,7 @@ const formSchema = new mongoose.Schema({
     fields: {
         type: Array,
     },
-    responses: {
+    submissions: {
         type: Array,
     }
 });
