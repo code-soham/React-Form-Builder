@@ -6,7 +6,7 @@ export default function authLogin(props: {
 }) {
   axios({
     method: "post",
-    url: "http://localhost:8000/auth/",
+    url: process.env.REACT_APP_API+"auth/",
     data: {
       email: props.email,
       password: props.password,
