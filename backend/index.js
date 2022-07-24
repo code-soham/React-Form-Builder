@@ -4,6 +4,9 @@ require("./db/dbconfig");
 const User = require("./models/user");
 const Form = require("./models/form");
 var cors = require("cors");
+const bcrypt = require("bcrypt");
+ObjectId = require("mongodb").ObjectID;
+const saltRounds = 10;
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -28,7 +31,7 @@ app.post("/addUser/", async (req, res) => {
   } else {
     const newUser = new User({
       email: req.body.email,
-      password: req.body.password,
+      password: bcrypt.hashSync(req.body.password, saltRounds),
       name: req.body.name,
     });
     newUser.save((err) => {
@@ -49,11 +52,20 @@ app.post("/addUser/", async (req, res) => {
 });
 app.post("/createForm/", async (req, res) => {
   //create form
-  let response = await makeForm(req.body);
-  console.log(response, "id");
-  res.send({
-    id: response,
-  });
+  let valid = await authenticate(req.body);
+  if (valid === true) {
+    let response = await makeForm(req.body);
+    console.log(response, "id");
+    res.send({
+      success: true,
+      msg: "Form Created",
+    });
+  } else {
+    res.send({
+      success: false,
+      msg: "Invalid Credentials",
+    });
+  }
 });
 
 app.post("/getFormById/", async (req, res) => {
@@ -89,24 +101,95 @@ app.post("/submitForm/", async (req, res) => {
 app.post("/getUser/", async (req, res) => {
   //get user "
   var response = await getUser(req.body.email);
-  console.log(response);
   if (response.length === 0) {
     res.send({
       success: false,
       data: response,
     });
   } else {
+    response[0].password = "";
     res.send({
       success: true,
       data: response,
     });
   }
 });
+app.post("/deleteResponse/", async (req, res) => {
+  //delete response
+  var response = await deleteResponse(req.body);
+  console.log(req.body);
+  res.send({
+    msg: response,
+  });
+});
 app.listen(process.env.PORT || 8000, async () => {
   console.log(`Listening on PORT ${process.env.PORT || 8000}`);
 });
+app.post("/deleteForm/", async (req, res) => {
+  let valid = await authenticate(req.body);
+  if (valid === true) {
+    let response = (await deleteForm(req.body)) && (await unlink(req.body));
 
+    console.log(response, req.body.id);
+    if (response === "Form Deleted") {
+      res.send({
+        success: true,
+        msg: "Form Deleted",
+      });
+    } else {
+      res.send({
+        success: false,
+        msg: "Failed to Delete",
+      });
+    }
+  } else {
+    res.send({
+      success: false,
+      msg: "Invalid Credentials",
+    });
+  }
+});
 //functions
+async function deleteForm(obj) {
+  console.log(obj);
+  let data = await Form.find({
+    _id: obj.id,
+  });
+  if (data.length === 0) return "Form Not Found";
+  else {
+    let resp = await Form.find({
+      _id: obj.id,
+    }).deleteOne();
+    return resp ? "Form Deleted" : "Failed to Delete";
+  }
+}
+async function unlink(obj) {
+  let data = await User.find({
+    email: obj.email,
+  }).updateOne({
+    $pull: {
+      forms: { id: obj.id, name: obj.name },
+    },
+  });
+  console.log("data:", data);
+  return data;
+}
+async function deleteResponse(obj) {
+  try {
+    let response = await Form.findOne({ _id: obj.id });
+    console.log(response);
+    response.submissions.splice(obj.index, 1);
+    let resp = await Form.find({ _id: obj.id }).updateOne({
+      $set: {
+        submissions: response.submissions,
+      },
+    });
+    if (resp) return "Success";
+    else return "Error";
+  } catch (err) {
+    return err;
+  }
+}
 async function getUser(obj) {
   return await User.find({ email: obj });
 }
@@ -120,7 +203,11 @@ async function submitForm(obj) {
       _id: obj.id,
     }).updateOne({
       $push: {
-        submissions: obj.submission,
+        submissions: {
+          responses: obj.submission,
+          name: obj.name,
+          date: Date.now(),
+        },
       },
     });
     if (resp) return "Success";
@@ -137,7 +224,7 @@ async function makeForm(obj) {
   let uid;
   const newForm = new Form({
     title: obj.formData.title,
-    desc: obj.formData.desc,
+    description: obj.formData.description,
     fields: obj.formData.fields,
   });
   newForm.save(async (err, form) => {
@@ -145,19 +232,19 @@ async function makeForm(obj) {
       console.log(err);
       return "err";
     } else {
-      var cnf = await tagUser(obj.user, form._id);
+      var cnf = await tagUser(obj.email, form._id, form.title);
       console.log(cnf);
       if (cnf !== null) return cnf;
       else return "Cant Link";
     }
   });
 }
-async function tagUser(user, uid) {
+async function tagUser(user, uid, title) {
   let resp = await User.find({
     email: user,
   }).updateOne({
     $push: {
-      forms: uid.toString(),
+      forms: { id: uid.toString(), title },
     },
   });
   if (resp) return uid.toString();
@@ -166,9 +253,8 @@ async function tagUser(user, uid) {
 async function authenticate(obj) {
   let data = await User.find({
     email: obj.email,
-    password: obj.password,
   });
-  return data.length === 1;
+  return data.length === 1 && bcrypt.compare(obj.password, data[0].password);
 }
 async function findUser(obj) {
   let data = await User.find({

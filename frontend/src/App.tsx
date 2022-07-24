@@ -1,24 +1,93 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-
+import { useState } from "react";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Viewform from "./pages/Viewform";
+import PublicForm from "./pages/PublicForm";
+import Buildform from "./pages/Buildform";
+import Protected from "./utils/Protected";
+import "./App.css";
+import { HashRouter, Routes, Route } from "react-router-dom";
+import Register from "./pages/Register";
 function App() {
+  const [authenticated, setAuthenticated] = useState(undefined);
+  const [email, setEmail] = useState(
+    localStorage.getItem("formit.sessionInfo")
+      ? JSON.parse(localStorage.getItem("formit.sessionInfo") || "{}").email
+      : ""
+  );
+  const [password, setPassword] = useState(
+    localStorage.getItem("formit.sessionInfo")
+      ? JSON.parse(localStorage.getItem("formit.sessionInfo") || "{}").password
+      : ""
+  );
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <HashRouter>
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <Protected redirect={authenticated} path="/dashboard">
+                <Login
+                  setAuthenticated={setAuthenticated}
+                  authenticated={authenticated}
+                  setEmail={setEmail}
+                  setPassword={setPassword}
+                  email={email}
+                  password={password}
+                />
+              </Protected>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <Protected redirect={!authenticated} path="/">
+                <Dashboard
+                  setAuthenticated={setAuthenticated}
+                  authenticated={authenticated}
+                  setEmail={setEmail}
+                  setPassword={setPassword}
+                  email={email}
+                  password={password}
+                />
+              </Protected>
+            }
+          />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/dashboard/buildform"
+            element={
+              <Protected redirect={!authenticated} path="/dashboard">
+                <Buildform
+                  setAuthenticated={setAuthenticated}
+                  authenticated={authenticated}
+                  setEmail={setEmail}
+                  setPassword={setPassword}
+                  email={email}
+                  password={password}
+                />
+              </Protected>
+            }
+          />
+          <Route
+            path="/dashboard/viewform/:id"
+            element={
+              <Protected redirect={!authenticated} path="/dashboard">
+                <Viewform
+                  setAuthenticated={setAuthenticated}
+                  authenticated={authenticated}
+                  setEmail={setEmail}
+                  setPassword={setPassword}
+                  email={email}
+                  password={password}
+                />
+              </Protected>
+            }
+          />
+          <Route path="/form/:id" element={<PublicForm />} />
+        </Routes>
+      </HashRouter>
     </div>
   );
 }
