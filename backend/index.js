@@ -168,7 +168,7 @@ async function unlink(obj) {
     email: obj.email,
   }).updateOne({
     $pull: {
-      forms: { id: obj.id, name: obj.name },
+      forms: { id: obj.id, name: obj.name },  
     },
   });
   console.log("data:", data);
