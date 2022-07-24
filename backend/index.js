@@ -72,7 +72,7 @@ app.post("/getFormById/", async (req, res) => {
   //get form by id
   var response = await getForm(req.body.id);
   console.log(response);
-  if (response.length === 0) {
+  if (response?.length === 0) {
     res.send({
       success: false,
       data: response,
@@ -131,7 +131,7 @@ app.post("/deleteForm/", async (req, res) => {
     let response = (await deleteForm(req.body)) && (await unlink(req.body));
 
     console.log(response, req.body.id);
-    if (response === "Form Deleted") {
+    if (response !== "") {
       res.send({
         success: true,
         msg: "Form Deleted",
@@ -160,7 +160,8 @@ async function deleteForm(obj) {
     let resp = await Form.find({
       _id: obj.id,
     }).deleteOne();
-    return resp ? "Form Deleted" : "Failed to Delete";
+    console.log(resp);
+    return resp ? "Form Deleted" : "";
   }
 }
 async function unlink(obj) {
@@ -168,7 +169,7 @@ async function unlink(obj) {
     email: obj.email,
   }).updateOne({
     $pull: {
-      forms: { id: obj.id, name: obj.name },  
+      forms: { id: obj.id, name: obj.name },
     },
   });
   console.log("data:", data);
@@ -215,10 +216,15 @@ async function submitForm(obj) {
   }
 }
 async function getForm(obj) {
-  let data = await Form.find({
-    _id: obj,
-  });
-  return data;
+  if (obj === null) return false;
+  try {
+    let data = await Form.find({
+      _id: obj,
+    });
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
 }
 async function makeForm(obj) {
   let uid;
