@@ -17,5 +17,6 @@ export default function authLogin(props: {
     })
     .catch(function (error) {
       console.log(error);
+      alert("Login Failed");
     });
 }

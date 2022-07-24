@@ -20,6 +20,7 @@ export default function Login(props: {
   useEffect(() => {
     let prev_session = localStorage.getItem("formit.sessionInfo");
     console.log(`${props.email}, ${props.password}, ${prev_session}`);
+    console.log(process.env.REACT_APP_API)
     if (prev_session) {
       let session = JSON.parse(prev_session);
       props.setEmail(session.email);
