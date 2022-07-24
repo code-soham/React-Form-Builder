@@ -196,7 +196,7 @@ export default function PublicForm() {
               </Typography>
               {field.type === "chk" ? (
                 <List>
-                  {field.options.map((option: any, j: number) => {
+                  {field.options.map((option: string, j: number) => {
                     return (
                       <ListItem>
                         <Checkbox
@@ -209,7 +209,10 @@ export default function PublicForm() {
                           }}
                           checked={response[i][j]}
                         />
-                        <ListItemText primary={option.label} />
+                        &nbsp;
+                        <ListItemText primary={option} >
+                          {option}
+                        </ListItemText>
                       </ListItem>
                     );
                   })}
