@@ -10,6 +10,7 @@ import {
   SelectChangeEvent,
   Chip,
   Card,
+  Badge,
 } from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -111,7 +112,7 @@ export default function Viewform(props: {
           <Button
             onClick={() => {
               navigator.clipboard.writeText(
-                `${process.env.REACT_APP_URL}#/form/${formId}`
+                `https://code-soham.github.io/React-Form-Builder/#/form/${formId}`
               );
             }}
           >
@@ -121,6 +122,11 @@ export default function Viewform(props: {
         <p>{data.description}</p>
         {data.submissions.length > 0 ? (
           <>
+            <Badge
+             badgeContent={data.submissions.length}
+             max={9}
+             color="success"
+              >
             <FormControl
               style={{
                 width: "50%",
@@ -144,6 +150,7 @@ export default function Viewform(props: {
                 ))}
               </Select>
             </FormControl>
+            </Badge>
             <Button>
               <DeleteForever fontSize="large" onClick={() => handleDelete()} />
             </Button>

@@ -7,14 +7,12 @@ import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
-import Avatar from "@mui/material/Avatar"; 
+import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "react-router-dom";
-const ResponsiveAppBar = (props: {
-    wipeUser:any
-}) => {
+const ResponsiveAppBar = (props: { wipeUser: any }) => {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
   );
@@ -159,7 +157,7 @@ const ResponsiveAppBar = (props: {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt={"Ray Jean"} src="/static/images/avatar/2.jpg" />
+                <Avatar alt={"$"} />
               </IconButton>
             </Tooltip>
             <Menu

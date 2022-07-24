@@ -132,7 +132,7 @@ export default function PublicForm() {
           minHeight: "95vh",
         }}
       >
-        <AppBar position="sticky" color="transparent">
+        <AppBar color="transparent">
             <Toolbar>
             <Link to="/" style={{
                 textDecoration: "none",
